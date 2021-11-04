@@ -1,9 +1,13 @@
 from stores import Stores
 import traceback
 
-game1 = Stores("Assassin's Creed Unity")
+prices = {}
+
+game1 = Stores("Minecraft Story Mode")
 try:
     print("Epic Games:", game1.epic_games())
+    
+    prices["Epic Games"] = game1.epic_games()
 except:
     traceback.print_exc()
 
@@ -21,12 +25,14 @@ except:
 
 try: 
     print("Ubisoft Store:", game1.ubi_store())
+    prices["Ubisoft Store"] = game1.ubi_store()
 
 except:
     traceback.print_exc()
 
 try:
     print("Fanatical: ", game1.fanatical())
+    prices["Fanatical"] = game1.fanatical()
 except:
     traceback.print_exc()
 
