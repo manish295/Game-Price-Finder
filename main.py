@@ -3,7 +3,7 @@ import traceback
 
 prices = {}
 
-game1 = Stores("Minecraft Story Mode")
+game1 = Stores("Assassin's Creed Unity")
 try:
     print("Epic Games:", game1.epic_games())
     
