@@ -35,7 +35,7 @@ class Stores:
             price = price[0].strip()
         else:
             price = None
-        return {games.string: price}
+        return {"game":games.string, "price": price}
     
     def epic_games(self):
         url = f"https://www.epicgames.com/store/en-US/browse?q={self.game}&sortBy=relevancy&sortDir=DESC&count=40"
@@ -55,7 +55,7 @@ class Stores:
         else:
             price = prices[0].span
         
-        return {game_name.string: price.string}
+        return {"game":game_name.string, "price": price.string}
 
 
     def ubi_store(self):
@@ -73,7 +73,7 @@ class Stores:
         game_price = game.find(text=re.compile("\$.*"))
         game_type = game.find("div", class_="card-subtitle")
         
-        return {game_name.string + " " +  game_type.string: game_price.string}
+        return {"game":game_name.string + " " + game_type.string, "price": game_price.string}
 
 
     def humble_store(self):
@@ -88,7 +88,7 @@ class Stores:
             return {None: None}
         game_name = game.find("span", class_="entity-title")
         game_price = game.find("span", class_="price")
-        return {game_name.string: game_price.string}
+        return {"game":game_name.string, "price": game_price.string}
 
     def fanatical(self):
         url = f"https://www.fanatical.com/en/search?search={self.game}&sortBy=fan&types=game"
@@ -111,8 +111,7 @@ class Stores:
         game_div = soup.find("div", class_="product pt-4")
         game_name = game_div.find("h1", class_="product-name")
         game_price = game_div.find("div", class_="price").span
-        return {game_name.string: game_price.string}
-
+        return {"game":game_name.string, "price": game_price.string}
 
  
 
