@@ -25,8 +25,13 @@ class Stores:
         div = doc.find('div', attrs={'id': "search_resultsRows"})
         if div == None:
             return {None: None}
-        games = div.find('span', attrs={'class': 'title'})
-        game_img = games.find("img")['src']
+        game = div.find('a')
+        game_link = game['href']
+        game_img_url = requests.get(game_link).text
+        img_soup = BeautifulSoup(game_img_url, "html.parser")
+        game_img_div = img_soup.find("div", id="gameHeaderImageCtn")
+        game_img = game_img_div.find("img")["src"]
+        game_name = game.find("span", class_="title")
         price_div = div.find('div',  attrs={'class': 'col search_price_discount_combined responsive_secondrow'})
         price_child = price_div.findChildren('div')[1]
         price = price_child.find_all(text=re.compile("\$.*"))
@@ -36,7 +41,7 @@ class Stores:
             price = price[0].strip()
         else:
             price = None
-        return {"game":games.string, "price": price, "image": game_img}
+        return {"game":game_name.string, "price": price, "image": game_img, "link": game_link}
     
     def epic_games(self):
         url = f"https://www.epicgames.com/store/en-US/browse?q={self.game}&sortBy=relevancy&sortDir=DESC&count=40"
@@ -47,13 +52,14 @@ class Stores:
             return {None: None}
         else:
             game = game.findChildren('li')[0]
+        game_link = "https://www.epicgames.com" + game.find("a", class_="css-1jx3eyg")['href']
         game_img_div = game.find("div", class_="css-f0xnhl")
-        game_img = game_img_div.find("img")['data-image']
+        game_img = game_img_div.find("img")['data-image'].replace(" ","%20")
         game_info = game.find(class_="css-hkjq8i")
         game_name = game_info.find("div", attrs={'class': 'css-1h2ruwl'})
         price = game_info.find(text=re.compile("\$.*"))
 
-        return {"game":game_name.string, "price": price.string, "image": game_img}
+        return {"game":game_name.string, "price": price.string, "image": game_img, "link": game_link}
 
 
     def ubi_store(self):
@@ -67,12 +73,15 @@ class Stores:
         doc = BeautifulSoup(html, "html.parser")
         games = doc.find("ul", id="search-result-items")
         game = games.find("li")
+        if game == None:
+            return {None: None}
+        game_link = game.find("a")["href"]
         game_img = game.find("img")['src']
         game_name = game.find("div", class_="prod-title")
         game_price = game.find(text=re.compile("\$.*"))
         game_type = game.find("div", class_="card-subtitle")
         
-        return {"game":game_name.string + " " + game_type.string, "price": game_price.string, "image":game_img}
+        return {"game":game_name.string+" "+game_type.string, "price": game_price.string, "image":game_img, "link": game_link}
 
 
     def humble_store(self):
@@ -85,10 +94,11 @@ class Stores:
         game = games_ul.find("li", class_="entity-block-container js-entity-container")
         if game == None:
             return {None: None}
+        game_link = "https://www.humblebundle.com" + game.find("a")["href"]
         game_img = game.find("img")['src']
         game_name = game.find("span", class_="entity-title")
         game_price = game.find("span", class_="price")
-        return {"game":game_name.string, "price": game_price.string, "image": game_img}
+        return {"game":game_name.string, "price": game_price.string, "image": game_img, "link": game_link}
 
     def fanatical(self):
         url = f"https://www.fanatical.com/en/search?search={self.game}&sortBy=fan&types=game"
@@ -101,8 +111,8 @@ class Stores:
         game_card = div.find("div", class_="card-container col-6 col-sm-4 col-md-6 col-lg-4")
         if game_card == None:
             return {None: None}
-        game_href = game_card.find("a", class_="faux-block-link__overlay-link", href=True)
-        game_url = f"https://www.fanatical.com{game_href['href']}"
+        game_link = game_card.find("a", class_="faux-block-link__overlay-link", href=True)["href"]
+        game_url = f"https://www.fanatical.com{game_link}"
         self.driver.get(game_url)
         time.sleep(2)
         self.driver.get_screenshot_as_file("Screenshots/fanatical2.png")
@@ -113,7 +123,7 @@ class Stores:
         game_img = img_div.find("img")['src']
         game_name = game_div.find("h1", class_="product-name")
         game_price = game_div.find("div", class_="price").span
-        return {"game":game_name.string, "price": game_price.string, "image": game_img}
+        return {"game":game_name.string, "price": game_price.string, "image": game_img, "link": game_url}
 
  
 

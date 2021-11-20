@@ -1,6 +1,7 @@
 $(document).ready(function() {
     $("#sendBtn").click(function() {
         var gameName = $("#game").val();
+        $("#game").prop("readonly", true);
         var checklist = []
         $("input[type=checkbox]:checked").each(function() {
             var text = $(this).next('label').text();
@@ -10,13 +11,13 @@ $(document).ready(function() {
             console.log(result)
             for(var i = 0; i < checklist.length; i++) {
                 var card = `
-                <div class="col-8 col-lg-4 col-xl-3">
+                <div class="col-8 col-lg-4 col-xl-3 d-flex align-self-stretch">
                     <div class='card'>
-                        <img src=`+ result[i]["image"].replaceAll(" ","%20") + ` class="card-img-top">   
-                        <div class='card-body'>
+                        <img src=`+ result[i]["image"] + ` class="card-img-top" height="250">   
+                        <div class='card-body d-flex flex-column'>
                             <h5 class="card-title">`+ result[i].price + `</h5>
                             <p class="card-text">` + result[i].game + `</p>
-                            <a href="#" class="btn btn-primary">`+ result[i].store +`</a>
+                            <a href=`+ result[i].link +` class="btn btn-primary mt-auto">`+ result[i].store +`</a>
                         </div>
                     </div>
                 </div>
