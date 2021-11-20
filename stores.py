@@ -26,6 +26,7 @@ class Stores:
         if div == None:
             return {None: None}
         games = div.find('span', attrs={'class': 'title'})
+        game_img = games.find("img")['src']
         price_div = div.find('div',  attrs={'class': 'col search_price_discount_combined responsive_secondrow'})
         price_child = price_div.findChildren('div')[1]
         price = price_child.find_all(text=re.compile("\$.*"))
@@ -35,7 +36,7 @@ class Stores:
             price = price[0].strip()
         else:
             price = None
-        return {"game":games.string, "price": price}
+        return {"game":games.string, "price": price, "image": game_img}
     
     def epic_games(self):
         url = f"https://www.epicgames.com/store/en-US/browse?q={self.game}&sortBy=relevancy&sortDir=DESC&count=40"
@@ -46,16 +47,13 @@ class Stores:
             return {None: None}
         else:
             game = game.findChildren('li')[0]
+        game_img_div = game.find("div", class_="css-f0xnhl")
+        game_img = game_img_div.find("img")['data-image']
         game_info = game.find(class_="css-hkjq8i")
         game_name = game_info.find("div", attrs={'class': 'css-1h2ruwl'})
-        prices = game_info.find("div", attrs={"class": "css-fhxb3m"}).findChild('span', attrs={'class': 'css-1vm3ks'})
-        prices = prices.find_all("div", attrs={'class': 'css-1x8w2lj'})
-        if len(prices) == 2:
-            price = prices[1].span
-        else:
-            price = prices[0].span
-        
-        return {"game":game_name.string, "price": price.string}
+        price = game_info.find(text=re.compile("\$.*"))
+
+        return {"game":game_name.string, "price": price.string, "image": game_img}
 
 
     def ubi_store(self):
@@ -69,11 +67,12 @@ class Stores:
         doc = BeautifulSoup(html, "html.parser")
         games = doc.find("ul", id="search-result-items")
         game = games.find("li")
+        game_img = game.find("img")['src']
         game_name = game.find("div", class_="prod-title")
         game_price = game.find(text=re.compile("\$.*"))
         game_type = game.find("div", class_="card-subtitle")
         
-        return {"game":game_name.string + " " + game_type.string, "price": game_price.string}
+        return {"game":game_name.string + " " + game_type.string, "price": game_price.string, "image":game_img}
 
 
     def humble_store(self):
@@ -86,9 +85,10 @@ class Stores:
         game = games_ul.find("li", class_="entity-block-container js-entity-container")
         if game == None:
             return {None: None}
+        game_img = game.find("img")['src']
         game_name = game.find("span", class_="entity-title")
         game_price = game.find("span", class_="price")
-        return {"game":game_name.string, "price": game_price.string}
+        return {"game":game_name.string, "price": game_price.string, "image": game_img}
 
     def fanatical(self):
         url = f"https://www.fanatical.com/en/search?search={self.game}&sortBy=fan&types=game"
@@ -109,9 +109,11 @@ class Stores:
         game_page = self.driver.page_source
         soup = BeautifulSoup(game_page, "html.parser")
         game_div = soup.find("div", class_="product pt-4")
+        img_div = game_div.find("div", class_="responsive-image-island product-cover-container standard-cover")
+        game_img = img_div.find("img")['src']
         game_name = game_div.find("h1", class_="product-name")
         game_price = game_div.find("div", class_="price").span
-        return {"game":game_name.string, "price": game_price.string}
+        return {"game":game_name.string, "price": game_price.string, "image": game_img}
 
  
 
