@@ -14,7 +14,7 @@ class Stores:
         PATH = "C:\Program Files (x86)\geckodriver.exe"
         op = webdriver.FirefoxOptions()
         op.headless = True
-        self.driver = webdriver.Firefox(executable_path=PATH, service_log_path=os.devnull, options=op)
+        self.driver = webdriver.Firefox(executable_path=PATH, options=op)
 
 
 
@@ -24,7 +24,7 @@ class Stores:
         doc = BeautifulSoup(page, "html.parser")
         div = doc.find('div', attrs={'id': "search_resultsRows"})
         if div == None:
-            return {None: None}
+            return {"game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
         game = div.find('a')
         game_link = game['href']
         game_img_url = requests.get(game_link).text
@@ -49,7 +49,7 @@ class Stores:
         doc = BeautifulSoup(page, "html.parser")
         game = doc.find('ul', attrs={'class': 'css-cnqlhg'})
         if game == None:
-            return {None: None}
+            return {"game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
         else:
             game = game.findChildren('li')[0]
         game_link = "https://www.epicgames.com" + game.find("a", class_="css-1jx3eyg")['href']
@@ -63,25 +63,23 @@ class Stores:
 
 
     def ubi_store(self):
-        self.driver.get("https://store.ubi.com/")
-        self.driver.implicitly_wait(5)
-        search_box = self.driver.find_element_by_xpath("//input[@type='search']")
-        search_box.send_keys(self.game)
+        self.driver.get(f"https://www.ubisoft.com/en-us/search?gss-q={self.game}")
         time.sleep(1)
-        self.driver.get_screenshot_as_file("Screenshots/ubistore.png")
-        html = self.driver.page_source
-        doc = BeautifulSoup(html, "html.parser")
-        games = doc.find("ul", id="search-result-items")
-        game = games.find("li")
-        if game == None:
-            return {None: None}
-        game_link = game.find("a")["href"]
-        game_img = game.find("img")['src']
-        game_name = game.find("div", class_="prod-title")
-        game_price = game.find(text=re.compile("\$.*"))
-        game_type = game.find("div", class_="card-subtitle")
+        self.driver.get_screenshot_as_file("Screenshots/new_ubistore.png")
+        shadow_root = self.driver.execute_script("return arguments[0].shadowRoot.children", self.driver.find_element_by_id("search-page"))
+        html = self.driver.execute_script("return arguments[0].innerHTML", shadow_root[0])
+        soup = BeautifulSoup(html, "html.parser")
+        search_products = soup.find("div", class_="search-page__resultset search-page__resultset__store products")
+        if search_products == None:
+            return {"game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
+        game_div = search_products.find("div")
+        game_link = game_div.find('a')['href']
+        game_img = game_div.find('img')['src']
+        game_name = game_div.find("div", class_="hit__title").findChild("div")
+        game_type = game_div.find("div", class_="hit__edition")
+        game_price = game_div.find(text=re.compile("\$.*"))
         
-        return {"game":game_name.string+" "+game_type.string, "price": game_price.string, "image":game_img, "link": game_link}
+        return {"game": game_name.string + " " + game_type.string, "price": game_price.string, "image":game_img, "link": game_link}
 
 
     def humble_store(self):
@@ -93,7 +91,7 @@ class Stores:
         games_ul = doc.find("ul", attrs={"class": "entities-list js-entities-list no-style-list full js-full"})
         game = games_ul.find("li", class_="entity-block-container js-entity-container")
         if game == None:
-            return {None: None}
+            return {"game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
         game_link = "https://www.humblebundle.com" + game.find("a")["href"]
         game_img = game.find("img")['src']
         game_name = game.find("span", class_="entity-title")
@@ -110,7 +108,7 @@ class Stores:
         div = doc.find("div", class_="ais-Hits__root")
         game_card = div.find("div", class_="card-container col-6 col-sm-4 col-md-6 col-lg-4")
         if game_card == None:
-            return {None: None}
+            return {"game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
         game_link = game_card.find("a", class_="faux-block-link__overlay-link", href=True)["href"]
         game_url = f"https://www.fanatical.com{game_link}"
         self.driver.get(game_url)

@@ -1,12 +1,22 @@
 $(document).ready(function() {
     $("#sendBtn").click(function() {
+        $("#game").attr("readonly", true);
         var gameName = $("#game").val();
-        $("#game").prop("readonly", true);
+        if(gameName == "") {
+            alert("Please enter a game");
+            return;
+        }
+
+        $("#crd").empty();
         var checklist = []
         $("input[type=checkbox]:checked").each(function() {
             var text = $(this).next('label').text();
             checklist.push(text)
         });
+        if (checklist == []) {
+            alert("Please select the stores");
+            return;
+        }
         postData({"game_name": gameName, "stores": checklist}, function(result) {
             console.log(result)
             for(var i = 0; i < checklist.length; i++) {
@@ -24,8 +34,8 @@ $(document).ready(function() {
                 `
                 document.getElementById("crd").insertAdjacentHTML('beforeend', card);
             }
-
-        });   
+            $("#game").removeAttr("readonly");   
+        });
     });
 });
 
