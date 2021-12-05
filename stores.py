@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import re
-from config import api_key
+from config import *
 
 class Stores:
 
@@ -16,7 +16,7 @@ class Stores:
         doc = BeautifulSoup(page, "html.parser")
         div = doc.find('div', attrs={'id': "search_resultsRows"})
         if div == None:
-            return {"game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
+            return {"store": "Steam" ,"game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
         game = div.find('a')
         game_link = game['href']
         game_img_url = requests.get(game_link).text
@@ -41,7 +41,7 @@ class Stores:
         doc = BeautifulSoup(page, "html.parser")
         game = doc.find('ul', attrs={'class': 'css-cnqlhg'})
         if game == None:
-            return {"game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
+            return {"store":"Epic Games", "game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
         else:
             game = game.findChildren('li')[0]
         game_link = "https://www.epicgames.com" + game.find("a", class_="css-1jx3eyg")['href']
@@ -49,7 +49,9 @@ class Stores:
         game_img = game_img_div.find("img")['data-image'].replace(" ","%20")
         game_info = game.find(class_="css-hkjq8i")
         game_name = game_info.find("div", attrs={'class': 'css-1h2ruwl'})
-        price = game_info.find(text=re.compile("\$.*"))
+        price = game_info.find("span", class_="css-z3vg5b")
+        if price == None:
+            price = game_info.find(text=re.compile("\$.*"))
 
         return {"store": "Epic Games", "game":game_name.string, "price": price.string, "image": game_img, "link": game_link}
 
@@ -57,10 +59,10 @@ class Stores:
     def ubi_store(self):
         jsonRequestData = '{"requests":[{"indexName":"store_en-us", "query": "%s"}]}' % (self.game)
         headers = {'Content-type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
-        response = requests.post("https://avcvysejs1-dsn.algolia.net/1/indexes/*/queries?x-algolia-agent=Algolia%20for%20JavaScript%20(4.9.2)%3B%20Browser%20(lite)%3B%20JS%20Helper%20(3.4.5)%3B%20react%20(16.8.3)%3B%20react-instantsearch%20(6.11.1)&x-algolia-api-key=1291fd5d5cd5a76a225fc6b00f7b296a&x-algolia-application-id=AVCVYSEJS1", headers=headers, data=jsonRequestData)
+        response = requests.post(f"https://avcvysejs1-dsn.algolia.net/1/indexes/*/queries?x-algolia-agent=Algolia%20for%20JavaScript%20(4.9.2)%3B%20Browser%20(lite)%3B%20JS%20Helper%20(3.4.5)%3B%20react%20(16.8.3)%3B%20react-instantsearch%20(6.11.1)&x-algolia-api-key={ubi_store_key}&x-algolia-application-id=AVCVYSEJS1", headers=headers, data=jsonRequestData)
         json_reponse = response.json()
-        if json_reponse["results"][0]["hits"][0] == []:
-            return {"game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
+        if json_reponse["results"][0]["hits"] == []:
+            return {"store":"Ubisoft Store", "game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
         game_info = json_reponse["results"][0]["hits"][0]
         game_name = game_info["title"]
         game_type = game_info["Edition"]
@@ -68,15 +70,15 @@ class Stores:
         game_img = game_info["image_link"]
         game_link = game_info["linkWeb"]
                 
-        return {"game": game_name + " " + game_type, "price": game_price, "image":game_img, "link": game_link}
+        return {"store": "Ubisoft Store", "game": game_name + " " + game_type, "price": game_price, "image":game_img, "link": game_link}
 
 
     def green_man_gaming(self):
         jsonRequestData = '{"requests": [{"indexName": "prod_ProductSearch_US", "query": "%s"}]}' % (self.game)
         headers = {'Content-type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
-        response = requests.post("https://sczizsp09z-dsn.algolia.net/1/indexes/*/queries?x-algolia-agent=Algolia%20for%20JavaScript%20(4.5.1)%3B%20Browser%20(lite)%3B%20instantsearch.js%20(4.8.3)%3B%20JS%20Helper%20(3.2.2)&x-algolia-api-key=3bc4cebab2aa8cddab9e9a3cfad5aef3&x-algolia-application-id=SCZIZSP09Z", headers=headers, data=jsonRequestData)
-        if response.json()["results"][0]["hits"][0] == []:
-            return {"game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
+        response = requests.post(f"https://sczizsp09z-dsn.algolia.net/1/indexes/*/queries?x-algolia-agent=Algolia%20for%20JavaScript%20(4.5.1)%3B%20Browser%20(lite)%3B%20instantsearch.js%20(4.8.3)%3B%20JS%20Helper%20(3.2.2)&x-algolia-api-key={green_key}&x-algolia-application-id=SCZIZSP09Z", headers=headers, data=jsonRequestData)
+        if response.json()["results"][0]["hits"] == []:
+            return {"store":"Green Man Gaming", "game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
         game_info = response.json()["results"][0]["hits"][0]
         game_name = game_info["DisplayName"]
         game_price = "$" + str(game_info["Regions"]["US"]["Drp"])
@@ -91,7 +93,7 @@ class Stores:
         headers = {'Content-type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
         response = requests.post("https://w2m9492ddv-dsn.algolia.net/1/indexes/*/queries?x-algolia-agent=Algolia%20for%20JavaScript%20(3.35.1)%3B%20Browser%20(lite)%3B%20react-instantsearch%204.5.2%3B%20JS%20Helper%20(2.28.1)&x-algolia-application-id=W2M9492DDV", headers=headers, data=jsonRequestData)
         if response.json()["results"][0]["hits"] == []:
-            return {"game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
+            return {"store":"Fanatical", "game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
         game_info = response.json()["results"][0]["hits"][0]
         game_name = game_info["name"]
         game_price = "$" + str(game_info["price"]["USD"])
@@ -100,3 +102,18 @@ class Stores:
         slug = game_info["slug"]
         game_url = f"https://www.fanatical.com/en/game/{slug}"
         return {"store": "Fanatical", "game":game_name, "price": game_price, "image": game_img, "link": game_url} 
+    
+
+    def gamesplanet(self):
+        url = f"https://us.gamesplanet.com/search?query={self.game}"
+        page = requests.get(url).text
+        soup = BeautifulSoup(page, "html.parser")
+        games = soup.find("div", class_="row row-page-ctn")
+        game_div = games.find("div").div
+        game_img = game_div.find("img")["src"]
+        game_link = game_div.find("a", class_="d-block text-decoration-none stretched-link")["href"]
+        game_url = f"https://us.gamesplanet.com{game_link}"
+        game_name = game_div.find("a", class_="d-block text-decoration-none stretched-link").string
+        game_price = game_div.find("span", class_="price_current")
+
+        return {"store": "GamesPlanet", "game":game_name, "price": game_price.string, "image": game_img, "link": game_url} 

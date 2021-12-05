@@ -27,7 +27,9 @@ def game_scrape():
         if store == "Ubisoft":
             prices.append(game.ubi_store())
         if store == "Fanatical":
-            prices.append(game.fanatical())       
+            prices.append(game.fanatical())  
+        if store == "GamesPlanet":
+            prices.append(game.gamesplanet())     
     return json.dumps(prices)
 
 
