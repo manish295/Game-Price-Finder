@@ -1,20 +1,12 @@
 from bs4 import BeautifulSoup
 import requests
 import re
-from selenium import webdriver
-import time
-import os
-
-
+from config import api_key
 
 class Stores:
 
     def __init__(self, game):
         self.game = game
-        PATH = "C:\Program Files (x86)\geckodriver.exe"
-        op = webdriver.FirefoxOptions()
-        op.headless = True
-        self.driver = webdriver.Firefox(executable_path=PATH, options=op)
 
 
 
@@ -41,7 +33,7 @@ class Stores:
             price = price[0].strip()
         else:
             price = None
-        return {"game":game_name.string, "price": price, "image": game_img, "link": game_link}
+        return {"store": "Steam", "game":game_name.string, "price": price, "image": game_img, "link": game_link}
     
     def epic_games(self):
         url = f"https://www.epicgames.com/store/en-US/browse?q={self.game}&sortBy=relevancy&sortDir=DESC&count=40"
@@ -59,71 +51,52 @@ class Stores:
         game_name = game_info.find("div", attrs={'class': 'css-1h2ruwl'})
         price = game_info.find(text=re.compile("\$.*"))
 
-        return {"game":game_name.string, "price": price.string, "image": game_img, "link": game_link}
+        return {"store": "Epic Games", "game":game_name.string, "price": price.string, "image": game_img, "link": game_link}
 
 
     def ubi_store(self):
-        self.driver.get(f"https://www.ubisoft.com/en-us/search?gss-q={self.game}")
-        time.sleep(1)
-        self.driver.get_screenshot_as_file("Screenshots/new_ubistore.png")
-        shadow_root = self.driver.execute_script("return arguments[0].shadowRoot.children", self.driver.find_element_by_id("search-page"))
-        html = self.driver.execute_script("return arguments[0].innerHTML", shadow_root[0])
-        soup = BeautifulSoup(html, "html.parser")
-        search_products = soup.find("div", class_="search-page__resultset search-page__resultset__store products")
-        if search_products == None:
+        jsonRequestData = '{"requests":[{"indexName":"store_en-us", "query": "%s"}]}' % (self.game)
+        headers = {'Content-type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+        response = requests.post("https://avcvysejs1-dsn.algolia.net/1/indexes/*/queries?x-algolia-agent=Algolia%20for%20JavaScript%20(4.9.2)%3B%20Browser%20(lite)%3B%20JS%20Helper%20(3.4.5)%3B%20react%20(16.8.3)%3B%20react-instantsearch%20(6.11.1)&x-algolia-api-key=1291fd5d5cd5a76a225fc6b00f7b296a&x-algolia-application-id=AVCVYSEJS1", headers=headers, data=jsonRequestData)
+        json_reponse = response.json()
+        if json_reponse["results"][0]["hits"][0] == []:
             return {"game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
-        game_div = search_products.find("div")
-        game_link = game_div.find('a')['href']
-        game_img = game_div.find('img')['src']
-        game_name = game_div.find("div", class_="hit__title").findChild("div")
-        game_type = game_div.find("div", class_="hit__edition")
-        game_price = game_div.find(text=re.compile("\$.*"))
-        
-        return {"game": game_name.string + " " + game_type.string, "price": game_price.string, "image":game_img, "link": game_link}
+        game_info = json_reponse["results"][0]["hits"][0]
+        game_name = game_info["title"]
+        game_type = game_info["Edition"]
+        game_price = "$" + str(round(game_info["price"][0]["USD"],2))
+        game_img = game_info["image_link"]
+        game_link = game_info["linkWeb"]
+                
+        return {"game": game_name + " " + game_type, "price": game_price, "image":game_img, "link": game_link}
 
 
-    def humble_store(self):
-        url = f"https://www.humblebundle.com/store/search?sort=bestselling&search={self.game}&platform=windows"
-        self.driver.get(url)
-        self.driver.get_screenshot_as_file("Screenshots/humblestore.png")
-        html = self.driver.page_source
-        doc = BeautifulSoup(html, "html.parser")
-        games_ul = doc.find("ul", attrs={"class": "entities-list js-entities-list no-style-list full js-full"})
-        game = games_ul.find("li", class_="entity-block-container js-entity-container")
-        if game == None:
+    def green_man_gaming(self):
+        jsonRequestData = '{"requests": [{"indexName": "prod_ProductSearch_US", "query": "%s"}]}' % (self.game)
+        headers = {'Content-type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+        response = requests.post("https://sczizsp09z-dsn.algolia.net/1/indexes/*/queries?x-algolia-agent=Algolia%20for%20JavaScript%20(4.5.1)%3B%20Browser%20(lite)%3B%20instantsearch.js%20(4.8.3)%3B%20JS%20Helper%20(3.2.2)&x-algolia-api-key=3bc4cebab2aa8cddab9e9a3cfad5aef3&x-algolia-application-id=SCZIZSP09Z", headers=headers, data=jsonRequestData)
+        if response.json()["results"][0]["hits"][0] == []:
             return {"game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
-        game_link = "https://www.humblebundle.com" + game.find("a")["href"]
-        game_img = game.find("img")['src']
-        game_name = game.find("span", class_="entity-title")
-        game_price = game.find("span", class_="price")
-        return {"game":game_name.string, "price": game_price.string, "image": game_img, "link": game_link}
+        game_info = response.json()["results"][0]["hits"][0]
+        game_name = game_info["DisplayName"]
+        game_price = "$" + str(game_info["Regions"]["US"]["Drp"])
+        img_url = game_info["ImageUrl"]
+        game_img = f"https://images.greenmangaming.com{img_url}"
+        link_url = game_info["Url"]
+        game_link = f"https://www.greenmangaming.com{link_url}"
+        return {"store": "Green Man Gaming", "game":game_name, "price": game_price, "image": game_img, "link": game_link}
 
     def fanatical(self):
-        url = f"https://www.fanatical.com/en/search?search={self.game}&sortBy=fan&types=game"
-        self.driver.get(url)
-        time.sleep(2)
-        self.driver.get_screenshot_as_file("Screenshots/fanatical1.png")
-        html = self.driver.page_source
-        doc = BeautifulSoup(html, "html.parser")
-        div = doc.find("div", class_="ais-Hits__root")
-        game_card = div.find("div", class_="card-container col-6 col-sm-4 col-md-6 col-lg-4")
-        if game_card == None:
+        jsonRequestData = '{"requests": [{"indexName": "fan", "query": "%s"}], "apiKey": "%s"}' % (self.game, api_key)
+        headers = {'Content-type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
+        response = requests.post("https://w2m9492ddv-dsn.algolia.net/1/indexes/*/queries?x-algolia-agent=Algolia%20for%20JavaScript%20(3.35.1)%3B%20Browser%20(lite)%3B%20react-instantsearch%204.5.2%3B%20JS%20Helper%20(2.28.1)&x-algolia-application-id=W2M9492DDV", headers=headers, data=jsonRequestData)
+        if response.json()["results"][0]["hits"] == []:
             return {"game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
-        game_link = game_card.find("a", class_="faux-block-link__overlay-link", href=True)["href"]
-        game_url = f"https://www.fanatical.com{game_link}"
-        self.driver.get(game_url)
-        time.sleep(2)
-        self.driver.get_screenshot_as_file("Screenshots/fanatical2.png")
-        game_page = self.driver.page_source
-        soup = BeautifulSoup(game_page, "html.parser")
-        game_div = soup.find("div", class_="product pt-4")
-        img_div = game_div.find("div", class_="responsive-image-island product-cover-container standard-cover")
-        game_img = img_div.find("img")['src']
-        game_name = game_div.find("h1", class_="product-name")
-        game_price = game_div.find("div", class_="price").span
-        return {"game":game_name.string, "price": game_price.string, "image": game_img, "link": game_url}
-
- 
-
-    def shut_down(self):
-        self.driver.quit()
+        game_info = response.json()["results"][0]["hits"][0]
+        game_name = game_info["name"]
+        game_price = "$" + str(game_info["price"]["USD"])
+        cover = game_info["cover"]
+        game_img = f"https://fanatical.imgix.net/product/original/{cover}?auto=compress,format&w=1280&fit=crop&h=720&q=75"
+        slug = game_info["slug"]
+        game_url = f"https://www.fanatical.com/en/game/{slug}"
+        return {"store": "Fanatical", "game":game_name, "price": game_price, "image": game_img, "link": game_url} 

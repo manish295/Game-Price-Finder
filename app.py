@@ -18,19 +18,16 @@ def game_scrape():
     prices = []
     game = Stores(game_name)
     for store in game_stores:
-        layout = {"store": store}
         if store == "Epic Games":
-            layout = {**layout, **game.epic_games()} 
-        if store == "Humble Store":
-            layout = {**layout, **game.humble_store()} 
+            prices.append(game.epic_games())
+        if store == "Green Man Gaming":
+            prices.append(game.green_man_gaming())
         if store == "Steam":
-            layout = {**layout, **game.steam()} 
+            prices.append(game.steam())
         if store == "Ubisoft":
-            layout = {**layout, **game.ubi_store()} 
+            prices.append(game.ubi_store())
         if store == "Fanatical":
-            layout = {**layout, **game.fanatical()}        
-        prices.append(layout)
-    game.shut_down()
+            prices.append(game.fanatical())       
     return json.dumps(prices)
 
 
