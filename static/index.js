@@ -8,22 +8,13 @@ $(document).ready(function() {
         }
 
         $("#crd").empty();
-        var checklist = []
-        $("input[type=checkbox]:checked").each(function() {
-            var text = $(this).next('label').text();
-            checklist.push(text)
-        });
-        if (checklist == []) {
-            alert("Please select the stores");
-            return;
-        }
-        postData({"game_name": gameName, "stores": checklist}, function(result) {
+        postData({"game_name": gameName}, function(result) {
             console.log(result)
-            for(var i = 0; i < checklist.length; i++) {
+            for(var i = 0; i < result.length; i++) {
                 var card = `
                 <div class="col-8 col-lg-4 col-xl-3 d-flex align-self-stretch">
-                    <div class='card'>
-                        <img src=`+ result[i]["image"] + ` class="card-img-top" height="250">   
+                    <div class='card mt-2'>
+                        <img src=`+ result[i]["image"] + ` class="card-img-top" height="250" width="250">   
                         <div class='card-body d-flex flex-column'>
                             <h5 class="card-title">`+ result[i].price + `</h5>
                             <p class="card-text">` + result[i].game + `</p>

@@ -9,7 +9,6 @@ class Stores:
         self.game = game
 
 
-
     def steam(self):
         url = f"https://store.steampowered.com/search/?term={self.game}"
         page = requests.get(url).text
