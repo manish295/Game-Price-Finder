@@ -17,12 +17,22 @@ h1 {
     flex-wrap: wrap;
     
 }
+.card:hover{
+    transform:scale(1.1);
+}
+.card {
+    transition: transform 0.2s ease;
+    box-shadow: 0 4px 6px 0 rgba(22, 22, 26, 0.18);
+    border-radius: 0;
+    border: 0;
+    margin-bottom: 1.5em;
+  }
 </style>
 
 <div class="container">
     <div class="stores"> 
         <form>
-            <div class= "input-group">
+            <div class= "input-group" style="padding-bottom:50px;">
                 <input class="form-control form-control-lg" type="text" placeholder="Game" id="game" aria-label=".form-control-lg example">
                 <button class="btn btn-danger btn-lg" type="button" id="sendBtn">Submit</button>
             </div>

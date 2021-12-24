@@ -13,7 +13,7 @@ $(document).ready(function() {
             for(var i = 0; i < result.length; i++) {
                 var card = `
                 <div class="col-8 col-lg-4 col-xl-3 d-flex align-self-stretch">
-                    <div class='card mt-2'>
+                    <div class='card mt-2' style="width: 18rem;">
                         <img src=`+ result[i]["image"] + ` class="card-img-top" height="250" width="250">   
                         <div class='card-body d-flex flex-column'>
                             <h5 class="card-title">`+ result[i].price + `</h5>

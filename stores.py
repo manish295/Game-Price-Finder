@@ -65,7 +65,7 @@ class Stores:
         game_info = json_reponse["results"][0]["hits"][0]
         game_name = game_info["title"]
         game_type = game_info["Edition"]
-        game_price = "$" + str(round(game_info["price"][0]["USD"],2))
+        game_price = "$" + str(format(game_info["price"][0]["USD"], ".2f"))
         game_img = game_info["image_link"]
         game_link = game_info["linkWeb"]
                 
@@ -80,7 +80,7 @@ class Stores:
             return {"store":"Green Man Gaming", "game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
         game_info = response.json()["results"][0]["hits"][0]
         game_name = game_info["DisplayName"]
-        game_price = "$" + str(game_info["Regions"]["US"]["Drp"])
+        game_price = "$" + str(format(game_info["Regions"]["US"]["Drp"], ".2f"))
         img_url = game_info["ImageUrl"]
         game_img = f"https://images.greenmangaming.com{img_url}"
         link_url = game_info["Url"]
@@ -88,7 +88,7 @@ class Stores:
         return {"store": "Green Man Gaming", "game":game_name, "price": game_price, "image": game_img, "link": game_link}
 
     def fanatical(self):
-        jsonRequestData = '{"requests": [{"indexName": "fan", "query": "%s"}], "apiKey": "%s"}' % (self.game, api_key)
+        jsonRequestData = '{"requests": [{"indexName": "fan", "query": "%s", "facetFilters": [["display_type:game"]]}], "apiKey": "%s"}' % (self.game, api_key)
         headers = {'Content-type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
         response = requests.post("https://w2m9492ddv-dsn.algolia.net/1/indexes/*/queries?x-algolia-agent=Algolia%20for%20JavaScript%20(3.35.1)%3B%20Browser%20(lite)%3B%20react-instantsearch%204.5.2%3B%20JS%20Helper%20(2.28.1)&x-algolia-application-id=W2M9492DDV", headers=headers, data=jsonRequestData)
         if response.json()["results"][0]["hits"] == []:
@@ -116,3 +116,14 @@ class Stores:
         game_price = game_div.find("span", class_="price_current")
 
         return {"store": "GamesPlanet", "game":game_name, "price": game_price.string, "image": game_img, "link": game_url} 
+
+    def gamersgate(self):
+        response = requests.get(f"https://www.gamersgate.com/api/games/?query={self.game}+&dlc=on&sort=alphabetically&timestamp=1640368554888&need_change_browser_url=true")
+        if response.json()["catalog"] == []:
+            return {"store":"GamersGate", "game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
+        game_info = response.json()["catalog"][0]
+        game_price = game_info["price"]
+        game_url = "https://www.gamersgate.com/" + game_info["link"]
+        game_img = game_info["image"]
+        game_name = game_info["name"]
+        return {"store": "GamersGate", "game": game_name, "price": game_price, "image": game_img, "link": game_url}

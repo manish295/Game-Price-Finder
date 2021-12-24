@@ -21,7 +21,8 @@ def game_scrape():
     prices.append(game.ubi_store())
     prices.append(game.fanatical())
     prices.append(game.green_man_gaming())
-    prices.append(game.gamesplanet())     
+    prices.append(game.gamesplanet())    
+    prices.append(game.gamersgate()) 
     return json.dumps(prices)
 
 
