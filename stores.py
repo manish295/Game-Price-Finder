@@ -48,7 +48,7 @@ class Stores:
         game_img = game_img_div.find("img")['data-image'].replace(" ","%20")
         game_info = game.find(class_="css-hkjq8i")
         game_name = game_info.find("div", attrs={'class': 'css-1h2ruwl'})
-        price = game_info.find("span", class_="css-z3vg5b")
+        price = game_info.find("span", class_="css-11ksoqt")
         if price == None:
             price = game_info.find(text=re.compile("\$.*"))
 
