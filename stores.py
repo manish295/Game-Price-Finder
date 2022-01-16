@@ -1,7 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
 import re
-from config import *
+import os
 
 class Stores:
 
@@ -58,7 +58,7 @@ class Stores:
     def ubi_store(self):
         jsonRequestData = '{"requests":[{"indexName":"store_en-us", "query": "%s"}]}' % (self.game)
         headers = {'Content-type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
-        response = requests.post(f"https://avcvysejs1-dsn.algolia.net/1/indexes/*/queries?x-algolia-agent=Algolia%20for%20JavaScript%20(4.9.2)%3B%20Browser%20(lite)%3B%20JS%20Helper%20(3.4.5)%3B%20react%20(16.8.3)%3B%20react-instantsearch%20(6.11.1)&x-algolia-api-key={ubi_store_key}&x-algolia-application-id=AVCVYSEJS1", headers=headers, data=jsonRequestData)
+        response = requests.post(f"https://avcvysejs1-dsn.algolia.net/1/indexes/*/queries?x-algolia-agent=Algolia%20for%20JavaScript%20(4.9.2)%3B%20Browser%20(lite)%3B%20JS%20Helper%20(3.4.5)%3B%20react%20(16.8.3)%3B%20react-instantsearch%20(6.11.1)&x-algolia-api-key={os.environ.get('UBISOFT_KEY')}&x-algolia-application-id=AVCVYSEJS1", headers=headers, data=jsonRequestData)
         json_reponse = response.json()
         if json_reponse["results"][0]["hits"] == []:
             return {"store":"Ubisoft Store", "game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
@@ -75,7 +75,7 @@ class Stores:
     def green_man_gaming(self):
         jsonRequestData = '{"requests": [{"indexName": "prod_ProductSearch_US", "query": "%s"}]}' % (self.game)
         headers = {'Content-type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
-        response = requests.post(f"https://sczizsp09z-dsn.algolia.net/1/indexes/*/queries?x-algolia-agent=Algolia%20for%20JavaScript%20(4.5.1)%3B%20Browser%20(lite)%3B%20instantsearch.js%20(4.8.3)%3B%20JS%20Helper%20(3.2.2)&x-algolia-api-key={green_key}&x-algolia-application-id=SCZIZSP09Z", headers=headers, data=jsonRequestData)
+        response = requests.post(f"https://sczizsp09z-dsn.algolia.net/1/indexes/*/queries?x-algolia-agent=Algolia%20for%20JavaScript%20(4.5.1)%3B%20Browser%20(lite)%3B%20instantsearch.js%20(4.8.3)%3B%20JS%20Helper%20(3.2.2)&x-algolia-api-key={os.environ.get('GREEN_KEY')}&x-algolia-application-id=SCZIZSP09Z", headers=headers, data=jsonRequestData)
         if response.json()["results"][0]["hits"] == []:
             return {"store":"Green Man Gaming", "game":"Game not found/Does not exist in store.", "price": "Not Available", "image": "Not Found", "link": "Not Available"}
         game_info = response.json()["results"][0]["hits"][0]
@@ -88,7 +88,7 @@ class Stores:
         return {"store": "Green Man Gaming", "game":game_name, "price": game_price, "image": game_img, "link": game_link}
 
     def fanatical(self):
-        jsonRequestData = '{"requests": [{"indexName": "fan", "query": "%s", "facetFilters": [["display_type:game"]]}], "apiKey": "%s"}' % (self.game, api_key)
+        jsonRequestData = '{"requests": [{"indexName": "fan", "query": "%s", "facetFilters": [["display_type:game"]]}], "apiKey": "%s"}' % (self.game, os.environ.get('FANATICAL_KEY'))
         headers = {'Content-type': 'application/x-www-form-urlencoded', 'Accept': 'application/json'}
         response = requests.post("https://w2m9492ddv-dsn.algolia.net/1/indexes/*/queries?x-algolia-agent=Algolia%20for%20JavaScript%20(3.35.1)%3B%20Browser%20(lite)%3B%20react-instantsearch%204.5.2%3B%20JS%20Helper%20(2.28.1)&x-algolia-application-id=W2M9492DDV", headers=headers, data=jsonRequestData)
         if response.json()["results"][0]["hits"] == []:

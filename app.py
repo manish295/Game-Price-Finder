@@ -1,8 +1,9 @@
 from flask import Flask, json, render_template, request
 from stores import Stores
+import os
 
 app = Flask(__name__)
-app.secret_key = "shhhhh"
+app.secret_key = os.environ.get('SECRET')
 
 @app.route("/")
 def index():
